@@ -19,6 +19,8 @@ Things I would change if I had more time:
 * Peer review - Something this important would need some review before touching production.
 * Linting
 * Better logging
+* Better documentation and comments
+* Account for performance. The way I'm consuming the files and creating the classes may not be ideal.
 
 1. How long did you spend working on the problem? What did you find to be the most difficult part?
 
