@@ -10,10 +10,15 @@ for the brevity below.
 
 Things I would change if I had more time:
 * *Tests!* Unit tests everywhere to ensure everything is working like it should.
-* Some refactoring.
+* Some refactoring - the master Balancier class might not have been the best approach.
 * More refactoring - separate stuff into individual files
 * CSVs don't match. Mine are ordered by ID, the examples are not. Maybe I missed something but
   it seems my are in the correct order.
+* More time verifying the code correctness. Without tests, I'm left to just reading the code, 
+  and it's entirely possible I overlooked something.
+* Peer review - Something this important would need some review before touching production.
+* Linting
+* Better logging
 
 1. How long did you spend working on the problem? What did you find to be the most difficult part?
 
@@ -45,11 +50,14 @@ to store facilities, banks, etc. in a database at this point.
    than streaming? We are not looking for code here, but pseudo code or description of a revised algorithm appreciated.
 
 I would do some sort of grouping based on the restrictions set by covenants. It would be possible to lump
-several loans into these groups and mass assign.
+several loans into these groups and mass assign. It's also possible that tackling the loans in a different
+order would allow for more assignments to be made, due to multiple facilities having the same interest rate, 
+but different amounts to loan.
 
 6. Because a number of facilities share the same interest rate, it’s possible that there are a number 
    of equally appealing options by the algorithm we recommended you use (assigning to the cheapest facility). 
    How might you tie­break facilities with equal interest rates, with the goal being to maximize the likelihood 
    that future loans streaming in will be assignable to some facility?
 
-
+I'd have to put some thought in this. At first I want to say just choose the facility with the most money every 
+time, but that might not always make sense.

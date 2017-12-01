@@ -20,6 +20,7 @@ class Facility(KwargInitMixin):
         self.max_default_likelihood = None
         self.interest_rate = float(self.interest_rate)
         self.assigned_loans = []
+        self.amount = float(self.amount)
 
     @property
     def effective_banned_states(self):
@@ -54,6 +55,13 @@ class Facility(KwargInitMixin):
                 self.effective_max_default_likelihood,
             ))
             return False
+        if loan.amount > self.amount:
+            logging.debug('Invalid due insufficient facility funds: {}, Loan amount: {}'.format(
+                self.amount,
+                loan.amount,
+            ))
+            return False
+        logging.debug('Facility is valid.')
         return True
 
     def calculate_yield_for_loan(self, loan):
@@ -74,6 +82,23 @@ class Facility(KwargInitMixin):
         for loan in self.assigned_loans:
             total += loan.expected_yield
         return int(round(total))
+
+    def assign_loan(self, loan, expected_yield):
+        '''
+        Assigns the specified loan to this facility
+        '''
+        self.assigned_loans.append(loan)
+        loan.assigned_facility = self
+        loan.expected_yield = expected_yield
+        self.amount -= loan.amount
+
+    def __str__(self):
+        return 'Facility: {}, Amount: {}, Loans: {}, Total Yield: {}'.format(
+            self.id,
+            self.amount,
+            len(self.assigned_loans),
+            self.calculate_total_yield(),
+        )
 
 
 class Bank(KwargInitMixin):
@@ -105,25 +130,36 @@ class Loan(KwargInitMixin):
         Searches through all provided facilities finding the best one to assign the loan to.
         '''
         max_yield = None
+        selected_facility = None
         for facility in facilities:
             logging.debug('Validating facility: {}'.format(facility.id))
-
             if not facility.validate_loan(self):
                 logging.debug(' - Facility is invalid')
-                continue
-            expected_yield = facility.calculate_yield_for_loan(self)
-            logging.debug(' - Expected yield: {}'.format(expected_yield))
-            if not expected_yield or expected_yield > max_yield:
-                max_yield = expected_yield
-                self.expected_yield = expected_yield
-                self.assigned_facility = facility
-                logging.debug(' - Assigned facility to loan.')
             else:
-                logging.debug(' - Not optimal')
-        if not self.assigned_facility:
-            logging.warning('Unable to assign loan: {}'.format(self))
-        else:
-            self.assigned_facility.assigned_loans.append(self)
+                expected_yield = facility.calculate_yield_for_loan(self)
+                logging.debug(' - Expected yield: {}'.format(expected_yield))
+                if not expected_yield or expected_yield > max_yield:
+                    max_yield = expected_yield
+                    selected_facility = facility
+                    logging.debug(' - Best facility so far: {}, amount: {}, expected yield: {}'.format(
+                        selected_facility.id,
+                        self.amount,
+                        self.expected_yield
+                    ))
+                else:
+                    logging.debug(' - Not optimal')
+        if not selected_facility:
+            logging.warning('Unable to assign loan: {}, Amount: {}'.format(self.id, self.amount))
+            return
+        selected_facility.assign_loan(self, max_yield)
+        return facility
+
+    def __str__(self):
+        return 'Loan {}, Assigned: {}, Amount: {}'.format(
+            self.id,
+            self.assigned_facility.id if self.assigned_facility else 'X',
+            self.amount,
+        )
 
 
 class Assignment(KwargInitMixin):
@@ -187,6 +223,9 @@ class Balancier(object):
         f = open('assignment_ben.csv', 'w')
         f.write('loan_id,facility_id\n')
         for loan in self.loans:
+            if not loan.assigned_facility:
+                logging.warning('Loan ID: {} was not assigned.'.format(loan.id))
+                continue
             logging.info('Loan ID: {} assigned to: {}'.format(loan.id, loan.assigned_facility.id))
             f.write('{},{}\n'.format(loan.id, loan.assigned_facility.id))
         f.flush()
@@ -201,6 +240,18 @@ class Balancier(object):
         f.flush()
         f.close()
 
+    def log_status(self):
+        logging.info('Facility Status:')
+        for facility in self.facilities:
+            logging.info(str(facility))
+        logging.info('Loan Status:')
+        for loan in self.loans:
+            logging.info(str(loan))
+        logging.info('Unassigned Loans:')
+        for loan in self.loans:
+            if not loan.assigned_facility:
+                logging.info(str(loan))
+
 
 if __name__ == '__main__':
     balancier = Balancier()
@@ -209,3 +260,4 @@ if __name__ == '__main__':
     balancier.make_assignments()
     balancier.write_assignments()
     balancier.write_yields()
+    balancier.log_status()
