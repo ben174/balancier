@@ -168,7 +168,7 @@ class Loan(KwargInitMixin):
 class Balancier(object):
     def __init__(self):
         self.covenants, self.banks, self.loans, self.facilities = [], [], [], []
-        self.assignments, self.yields = [], []
+        # for quick lookups
         self.bank_table, self.facility_table = {}, {}
 
     def read_data(self, directory):
