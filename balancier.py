@@ -1,4 +1,7 @@
+#!/usr/bin/env python
+
 import logging
+
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 
@@ -160,14 +163,6 @@ class Loan(KwargInitMixin):
             self.assigned_facility.id if self.assigned_facility else 'X',
             self.amount,
         )
-
-
-class Assignment(KwargInitMixin):
-    pass
-
-
-class Yield(KwargInitMixin):
-    pass
 
 
 class Balancier(object):
