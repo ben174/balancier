@@ -61,5 +61,7 @@ but different amounts to loan.
    How might you tie­break facilities with equal interest rates, with the goal being to maximize the likelihood 
    that future loans streaming in will be assignable to some facility?
 
-I'd have to put some thought in this. At first I want to say just choose the facility with the most money every 
-time, but that might not always make sense.
+It would probably make sense to put weights on facility amount vs. yield. If a loan is going to yield slightly 
+less at facility A, but facility A has way more money and facility B is running dry, then it would probably make sense
+to select facility A - since facility B might be able to fund another loan which has restrictions preventing it 
+from facility A.
